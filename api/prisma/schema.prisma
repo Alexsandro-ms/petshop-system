@@ -20,10 +20,10 @@ enum Role {
 }
 
 model Owner {
-  id    String @id @unique @default(uuid())
+  id    String  @id @unique @default(uuid())
   name  String
-  email String @unique
-  phone String
+  email String  @unique
+  phone String?
   Pet   Pet[]
 }
 
