@@ -6,6 +6,7 @@ import { IUser } from './interfaces/user';
 import * as bcrypt from 'bcrypt';
 import { FindOwnerDTO } from 'src/owner/dto/find-owner.dto';
 import { FindUserDTO } from './dto/find-user.dto';
+import { UpdatePutUserDTO } from './dto/update-put-user.dto';
 
 @Injectable()
 export class UserService {
@@ -115,6 +116,20 @@ export class UserService {
         skip,
         take,
         where: { name },
+      });
+    } catch (error) {
+      this.handleServerError(error);
+    }
+  }
+
+  async editOneById(
+    id: string,
+    updateBody: UpdatePutUserDTO,
+  ): Promise<UpdatePutUserDTO> {
+    try {
+      return await this.prisma.user.update({
+        where: { id },
+        data: updateBody,
       });
     } catch (error) {
       this.handleServerError(error);
