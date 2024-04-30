@@ -5,6 +5,7 @@ import { IUser } from './interfaces/user';
 
 import * as bcrypt from 'bcrypt';
 import { FindOwnerDTO } from 'src/owner/dto/find-owner.dto';
+import { FindUserDTO } from './dto/find-user.dto';
 
 @Injectable()
 export class UserService {
@@ -74,6 +75,19 @@ export class UserService {
       return createdUser;
     } catch (error) {
       this.handleServerError(error, 'Erro interno do servidor');
+    }
+  }
+  async findAll(page: number, pageSize: number): Promise<FindUserDTO[]> {
+    try {
+      const skip: number = (page - 1) * pageSize;
+      const take: number = pageSize;
+
+      return await this.prisma.user.findMany({
+        skip,
+        take,
+      });
+    } catch (error) {
+      this.handleServerError(error);
     }
   }
 }
