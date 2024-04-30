@@ -77,6 +77,7 @@ export class UserService {
       this.handleServerError(error, 'Erro interno do servidor');
     }
   }
+
   async findAll(page: number, pageSize: number): Promise<FindUserDTO[]> {
     try {
       const skip: number = (page - 1) * pageSize;
@@ -87,7 +88,17 @@ export class UserService {
         take,
       });
     } catch (error) {
-      this.handleServerError(error);
+      this.handleServerError(error, 'Erro interno do servidor');
+    }
+  }
+
+  async findOneById(id: string): Promise<FindUserDTO> {
+    try {
+      return await this.prisma.user.findUnique({
+        where: { id },
+      });
+    } catch (error) {
+      this.handleServerError(error, 'Proprietário não encontrado.');
     }
   }
 }
