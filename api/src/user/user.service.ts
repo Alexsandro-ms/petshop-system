@@ -101,4 +101,23 @@ export class UserService {
       this.handleServerError(error, 'Proprietário não encontrado.');
     }
   }
+
+  async findAllByName(
+    page: number,
+    pageSize: number,
+    name: string,
+  ): Promise<FindUserDTO[]> {
+    try {
+      const skip: number = (page - 1) * pageSize;
+      const take: number = pageSize;
+
+      return await this.prisma.user.findMany({
+        skip,
+        take,
+        where: { name },
+      });
+    } catch (error) {
+      this.handleServerError(error);
+    }
+  }
 }
