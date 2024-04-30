@@ -8,6 +8,7 @@ import { FindOwnerDTO } from 'src/owner/dto/find-owner.dto';
 import { FindUserDTO } from './dto/find-user.dto';
 import { UpdatePutUserDTO } from './dto/update-put-user.dto';
 import { UpdatePatchUserDTO } from './dto/update-patch-user.dto';
+import { DeleteUserDTO } from './dto/delete-user.dto';
 
 @Injectable()
 export class UserService {
@@ -145,6 +146,16 @@ export class UserService {
       return await this.prisma.user.update({
         where: { id },
         data: updateBody,
+      });
+    } catch (error) {
+      this.handleServerError(error);
+    }
+  }
+
+  async deleteOneById(id: string): Promise<DeleteUserDTO> {
+    try {
+      return await this.prisma.user.delete({
+        where: { id },
       });
     } catch (error) {
       this.handleServerError(error);
