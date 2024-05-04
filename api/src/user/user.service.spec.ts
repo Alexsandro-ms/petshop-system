@@ -5,6 +5,7 @@ import { IUser } from './interfaces/user';
 import { BadRequestException } from '@nestjs/common';
 import { UpdatePutUserDTO } from './dto/update-put-user.dto';
 import { UpdatePatchUserDTO } from './dto/update-patch-user.dto';
+import { DeleteUserDTO } from './dto/delete-user.dto';
 
 describe('USER SERVICE', () => {
   let userService: UserService;
@@ -324,6 +325,37 @@ describe('USER SERVICE', () => {
       } catch (error) {
         expect(error).toBeInstanceOf(BadRequestException);
         expect(error.response.message).toBe('Erro interno do servidor');
+      }
+    });
+  });
+
+  describe('################# DELETE USER BY ID #################', () => {
+    it('Should edit some user information', async () => {
+      const body: DeleteUserDTO = {
+        id: '1',
+      };
+
+      prismaService.user.delete = jest.fn().mockResolvedValue(body);
+
+      const DeletedUser = await userService.deleteOneById(body.id);
+
+      expect(DeletedUser).toBe(true);
+    });
+    it('Should give an error when trying to update user info by id', async () => {
+      const body: DeleteUserDTO = {
+        id: '1',
+      };
+
+      prismaService.user.delete = jest
+        .fn()
+        .mockRejectedValue('Usuário Não Encontrado.');
+      try {
+        await userService.deleteOneById(body.id);
+      } catch (error) {
+        expect(error).toBeInstanceOf(BadRequestException);
+        expect(error.response.message).toBe(
+          'Não foi possível deletar o usuário.',
+        );
       }
     });
   });

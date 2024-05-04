@@ -152,13 +152,21 @@ export class UserService {
     }
   }
 
-  async deleteOneById(id: string): Promise<DeleteUserDTO> {
+  async deleteOneById(id: string): Promise<boolean> {
     try {
-      return await this.prisma.user.delete({
+      await this.prisma.user.delete({
         where: { id },
       });
+
+      const confirmedUserDeleted = await this.findOneById(id);
+
+      if (!confirmedUserDeleted) {
+        return false;
+      }
+
+      return true;
     } catch (error) {
-      this.handleServerError(error);
+      this.handleServerError(error, 'Não foi possível deletar o usuário.');
     }
   }
 }
