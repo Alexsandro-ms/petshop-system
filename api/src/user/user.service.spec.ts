@@ -164,4 +164,73 @@ describe('USER SERVICE', () => {
       }
     });
   });
+
+  describe('################# FIND ONE BY NAME #################', () => {
+    it('Should find an user by name', async () => {
+      const body: IUser[] = [
+        {
+          id: '1',
+          name: 'John Doe',
+          email: 'johndoe@email.com',
+          permission: 'boss',
+          emailVerified: new Date(1620144000000),
+          image: '',
+        },
+        {
+          id: '2',
+          name: 'Jona Doe',
+          email: 'jonadoe@email.com',
+          permission: 'client',
+          emailVerified: new Date(1620144000000),
+          image: '',
+        },
+      ];
+
+      prismaService.user.findMany = jest.fn().mockResolvedValue(body);
+
+      const page: number = 1;
+      const pageSize: number = 10;
+
+      const findUsersByName = await userService.findAllByName(
+        page,
+        pageSize,
+        body[0].name,
+      );
+
+      expect(findUsersByName).toEqual(body);
+    });
+    it('Should give an error when trying to find users by name', async () => {
+      const body: IUser[] = [
+        {
+          id: '1',
+          name: 'John Doe',
+          email: 'johndoe@email.com',
+          permission: 'boss',
+          emailVerified: new Date(1620144000000),
+          image: '',
+        },
+        {
+          id: '2',
+          name: 'Jona Doe',
+          email: 'jonadoe@email.com',
+          permission: 'client',
+          emailVerified: new Date(1620144000000),
+          image: '',
+        },
+      ];
+
+      prismaService.user.findMany = jest
+        .fn()
+        .mockRejectedValue('Usuário Não Encontrado.');
+      try {
+        const page: number = 1;
+        const pageSize: number = 10;
+
+        await userService.findAllByName(page, pageSize, body[0].name);
+      } catch (error) {
+        expect(error).toBeInstanceOf(BadRequestException);
+        expect(error.response.message).toBe('Usuário Não Encontrado.');
+      }
+    });
+  });
 });

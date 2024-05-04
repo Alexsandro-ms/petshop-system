@@ -120,7 +120,7 @@ export class UserService {
         where: { name },
       });
     } catch (error) {
-      this.handleServerError(error);
+      this.handleServerError(error, 'Usuário Não Encontrado.');
     }
   }
 
