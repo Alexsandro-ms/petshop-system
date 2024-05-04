@@ -148,7 +148,7 @@ export class UserService {
         data: updateBody,
       });
     } catch (error) {
-      this.handleServerError(error);
+      this.handleServerError(error, 'Erro interno do servidor');
     }
   }
 

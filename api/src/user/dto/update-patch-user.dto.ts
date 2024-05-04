@@ -9,6 +9,9 @@ import {
 
 export class UpdatePatchUserDTO {
   @IsString()
+  id: string;
+
+  @IsString()
   name: string;
 
   @IsEmail()

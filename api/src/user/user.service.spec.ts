@@ -4,6 +4,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { IUser } from './interfaces/user';
 import { BadRequestException } from '@nestjs/common';
 import { UpdatePutUserDTO } from './dto/update-put-user.dto';
+import { UpdatePatchUserDTO } from './dto/update-patch-user.dto';
 
 describe('USER SERVICE', () => {
   let userService: UserService;
@@ -272,6 +273,54 @@ describe('USER SERVICE', () => {
         .mockRejectedValue('Usuário Não Encontrado.');
       try {
         await userService.editOneById(body.id, body);
+      } catch (error) {
+        expect(error).toBeInstanceOf(BadRequestException);
+        expect(error.response.message).toBe('Erro interno do servidor');
+      }
+    });
+  });
+
+  describe('################# UPDATE USER INFO BY ID #################', () => {
+    it('Should edit some user information', async () => {
+      const body: UpdatePatchUserDTO = {
+        id: '1',
+        name: 'Jona Doe',
+        email: 'jonadoe@email.com',
+        permission: 'boss',
+        emailVerified: new Date(1620144000000),
+        image: '',
+      };
+
+      const userReturn: IUser = {
+        id: '1',
+        name: 'Jona Doe',
+        email: 'jonadoe@email.com',
+        permission: 'boss',
+        emailVerified: new Date(1620144000000),
+        image: '',
+      };
+
+      prismaService.user.update = jest.fn().mockResolvedValue(userReturn);
+
+      const EditUser = await userService.updateOneById(body.id, body);
+
+      expect(EditUser).toBe(userReturn);
+    });
+    it('Should give an error when trying to update user info by id', async () => {
+      const body: UpdatePatchUserDTO = {
+        id: '1',
+        name: 'Jona Doe',
+        email: 'jonadoe@email.com',
+        permission: 'boss',
+        emailVerified: new Date(1620144000000),
+        image: '',
+      };
+
+      prismaService.user.update = jest
+        .fn()
+        .mockRejectedValue('Usuário Não Encontrado.');
+      try {
+        await userService.updateOneById(body.id, body);
       } catch (error) {
         expect(error).toBeInstanceOf(BadRequestException);
         expect(error.response.message).toBe('Erro interno do servidor');
