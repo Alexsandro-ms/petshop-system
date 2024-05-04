@@ -9,10 +9,13 @@ import {
 
 export class UpdatePutUserDTO {
   @IsString()
-  name: string;
+  id: string;
+
+  @IsString()
+  name?: string;
 
   @IsEmail()
-  email: string;
+  email?: string;
 
   @IsDateString()
   @IsOptional()
@@ -31,8 +34,8 @@ export class UpdatePutUserDTO {
 
   @IsString()
   @IsOptional()
-  image: string;
+  image?: string;
 
   @IsEnum(['boss', 'employee', 'client'])
-  permission: 'boss' | 'employee' | 'client';
+  permission?: 'boss' | 'employee' | 'client';
 }
