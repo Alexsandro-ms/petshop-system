@@ -3,6 +3,7 @@ import { UserService } from './user.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { IUser } from './interfaces/user';
 import { BadRequestException } from '@nestjs/common';
+import { UpdatePutUserDTO } from './dto/update-put-user.dto';
 
 describe('USER SERVICE', () => {
   let userService: UserService;
@@ -21,6 +22,10 @@ describe('USER SERVICE', () => {
 
   afterEach(async () => {
     jest.clearAllMocks();
+  });
+
+  afterAll(async () => {
+    await prismaService.$disconnect();
   });
 
   describe('MODULE TEST', () => {
@@ -127,7 +132,7 @@ describe('USER SERVICE', () => {
     });
   });
 
-  describe('################# FIND ONE BY ID #################', () => {
+  describe('################# FIND USER BY ID #################', () => {
     it('Should find an user by id', async () => {
       const body: IUser = {
         id: '1',
@@ -165,7 +170,7 @@ describe('USER SERVICE', () => {
     });
   });
 
-  describe('################# FIND ONE BY NAME #################', () => {
+  describe('################# FIND USER BY NAME #################', () => {
     it('Should find an user by name', async () => {
       const body: IUser[] = [
         {
@@ -230,6 +235,46 @@ describe('USER SERVICE', () => {
       } catch (error) {
         expect(error).toBeInstanceOf(BadRequestException);
         expect(error.response.message).toBe('Usuário Não Encontrado.');
+      }
+    });
+  });
+
+  describe('################# EDIT USER BY ID #################', () => {
+    it('Should edit some user information', async () => {
+      const body: UpdatePutUserDTO = {
+        id: '1',
+        name: 'John Doe',
+      };
+
+      const userReturn: IUser = {
+        id: '1',
+        name: 'John Doe',
+        email: 'johndoe@email.com',
+        permission: 'boss',
+        emailVerified: new Date(1620144000000),
+        image: '',
+      };
+
+      prismaService.user.update = jest.fn().mockResolvedValue(userReturn);
+
+      const EditUser = await userService.editOneById(body.id, body);
+
+      expect(EditUser).toBe(userReturn);
+    });
+    it('Should give an error when trying to edit user info by id', async () => {
+      const body: UpdatePutUserDTO = {
+        id: '1',
+        name: 'John Doe',
+      };
+
+      prismaService.user.update = jest
+        .fn()
+        .mockRejectedValue('Usuário Não Encontrado.');
+      try {
+        await userService.editOneById(body.id, body);
+      } catch (error) {
+        expect(error).toBeInstanceOf(BadRequestException);
+        expect(error.response.message).toBe('Erro interno do servidor');
       }
     });
   });
