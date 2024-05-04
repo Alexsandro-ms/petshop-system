@@ -75,4 +75,55 @@ describe('USER SERVICE', () => {
       }
     });
   });
+
+  describe('################### FIND ALL ###################', () => {
+    it('Should find all users', async () => {
+      const mockedUsers: IUser[] = [
+        {
+          id: '1',
+          name: 'John Doe',
+          email: 'Johndoe@email.com',
+          permission: 'boss',
+          emailVerified: new Date(1620144000000),
+          image: '',
+        },
+        {
+          id: '2',
+          name: 'Jona Doe',
+          email: 'Jonadoe@email.com',
+          permission: 'client',
+          emailVerified: new Date(1620144000000),
+          image: '',
+        },
+      ];
+      prismaService.user.findMany = jest.fn().mockResolvedValue(mockedUsers);
+      const page: number = 1;
+      const pageSize: number = 10;
+
+      const findUsers = await userService.findAll(page, pageSize);
+
+      expect(prismaService.user.findMany).toHaveBeenCalledWith({
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      });
+
+      expect(findUsers).toEqual(mockedUsers);
+    });
+
+    it('Should give an error when trying to find multiple users', async () => {
+      prismaService.user.findMany = jest
+        .fn()
+        .mockRejectedValue(new Error('Failed to create user'));
+
+      try {
+        const page: number = 1;
+        const pageSize: any = '';
+
+        await userService.findAll(page, pageSize);
+      } catch (error) {
+        expect(error).toBeInstanceOf(BadRequestException);
+        expect(error.response.message).toBe('Erro interno do servidor');
+      }
+    });
+  });
 });
