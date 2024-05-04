@@ -113,7 +113,7 @@ describe('USER SERVICE', () => {
     it('Should give an error when trying to find multiple users', async () => {
       prismaService.user.findMany = jest
         .fn()
-        .mockRejectedValue(new Error('Failed to create user'));
+        .mockRejectedValue(new Error('Erro interno do servidor'));
 
       try {
         const page: number = 1;
@@ -123,6 +123,44 @@ describe('USER SERVICE', () => {
       } catch (error) {
         expect(error).toBeInstanceOf(BadRequestException);
         expect(error.response.message).toBe('Erro interno do servidor');
+      }
+    });
+  });
+
+  describe('################# FIND ONE BY ID #################', () => {
+    it('Should find an user by id', async () => {
+      const body: IUser = {
+        id: '1',
+        name: 'John Doe',
+        email: 'johndoe@email.com',
+        permission: 'boss',
+        emailVerified: new Date(1620144000000),
+        image: '',
+      };
+
+      prismaService.user.findUnique = jest.fn().mockResolvedValue(body);
+      const findOneUser = await userService.findOneById(body.id);
+
+      expect(findOneUser).toEqual(body);
+    });
+    it('Should give an error when trying to find an user by id', async () => {
+      const body: IUser = {
+        id: undefined,
+        name: 'John Doe',
+        email: 'johndoe@email.com',
+        permission: 'boss',
+        emailVerified: new Date(1620144000000),
+        image: '',
+      };
+
+      prismaService.user.findUnique = jest
+        .fn()
+        .mockRejectedValue(new Error('Erro interno do servidor'));
+      try {
+        await userService.findOneById(body.id);
+      } catch (error) {
+        expect(error).toBeInstanceOf(BadRequestException);
+        expect(error.response.message).toBe('Proprietário não encontrado.');
       }
     });
   });
