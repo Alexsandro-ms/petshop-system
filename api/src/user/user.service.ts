@@ -1,10 +1,10 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDTO } from './dto/create-user.dto';
 import { IUser } from './interfaces/user';
 
 import * as bcrypt from 'bcrypt';
-import { FindOwnerDTO } from 'src/owner/dto/find-owner.dto';
+import { FindOwnerDTO } from '../owner/dto/find-owner.dto';
 import { FindUserDTO } from './dto/find-user.dto';
 import { UpdatePutUserDTO } from './dto/update-put-user.dto';
 import { UpdatePatchUserDTO } from './dto/update-patch-user.dto';
@@ -14,7 +14,7 @@ import { DeleteUserDTO } from './dto/delete-user.dto';
 export class UserService {
   constructor(private readonly prisma: PrismaService) {}
 
-  private async hashPassword(password: string): Promise<string> {
+  async hashPassword(password: string): Promise<string> {
     const saltRounds = 10;
     return await bcrypt.hash(password, saltRounds);
   }

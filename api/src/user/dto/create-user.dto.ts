@@ -3,6 +3,7 @@ import {
   IsDateString,
   IsEmail,
   IsEnum,
+  IsNotEmpty,
   IsString,
   IsStrongPassword,
 } from 'class-validator';
@@ -14,6 +15,7 @@ export class CreateUserDTO {
   name: string;
 
   @IsEmail()
+  @IsNotEmpty()
   email: string;
 
   @IsDateString()
