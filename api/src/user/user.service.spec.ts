@@ -8,6 +8,8 @@ import { UpdatePatchUserDTO } from './dto/update-patch-user.dto';
 import { DeleteUserDTO } from './dto/delete-user.dto';
 import { CreateUserDTO } from './dto/create-user.dto';
 import { FindUserDTO } from './dto/find-user.dto';
+import { FindOwnerDTO } from 'src/owner/dto/find-owner.dto';
+import { Owner } from '@prisma/client';
 
 describe('USER SERVICE', () => {
   let userService: UserService;
@@ -41,9 +43,12 @@ describe('USER SERVICE', () => {
   describe('#################### CREATE ####################', () => {
     it('Should create a user', async () => {
       const body: CreateUserDTO = {
+        id: '1',
         name: 'John Doe',
         email: 'johndoe@email.com',
         permission: 'boss',
+        emailVerified: new Date(1620144000000),
+        image: '',
       };
 
       prismaService.user.create = jest.fn().mockResolvedValue(body);
@@ -59,7 +64,7 @@ describe('USER SERVICE', () => {
       });
     });
 
-    it('should present an error when trying to create an user', async () => {
+    it('Should present an error when trying to create an user', async () => {
       const body: CreateUserDTO = {
         name: 'John Doe',
         email: null,
@@ -75,6 +80,42 @@ describe('USER SERVICE', () => {
       } catch (error) {
         expect(error).toBeInstanceOf(BadRequestException);
         expect(error.response.message).toBe('Erro interno do servidor');
+      }
+    });
+
+    it('Should find owner', async () => {
+      const mockUser: FindOwnerDTO = {
+        email: 'johndoe@email.com',
+        name: 'John Doe',
+      };
+
+      const returnUser: Owner = {
+        id: '1',
+        name: 'John Doe',
+        email: 'johndoe@email.com',
+        phone: '',
+      };
+
+      prismaService.owner.findUnique = jest.fn().mockResolvedValue(returnUser);
+
+      const findOwner = await userService.findOwner(mockUser.email);
+
+      expect(findOwner).toEqual(returnUser);
+    });
+
+    it('Should give an error "Dono não encontrado." when trying to find user by email', async () => {
+      const mockUser = {
+        email: '1',
+      };
+
+      prismaService.owner.findUnique = jest
+        .fn()
+        .mockRejectedValue('Dono não encontrado.');
+
+      try {
+        await userService.findOwner(mockUser.email);
+      } catch (error) {
+        expect(error).toBe('Dono não encontrado.');
       }
     });
   });

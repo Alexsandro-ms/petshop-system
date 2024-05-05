@@ -8,7 +8,6 @@ import { FindOwnerDTO } from '../owner/dto/find-owner.dto';
 import { FindUserDTO } from './dto/find-user.dto';
 import { UpdatePutUserDTO } from './dto/update-put-user.dto';
 import { UpdatePatchUserDTO } from './dto/update-patch-user.dto';
-import { DeleteUserDTO } from './dto/delete-user.dto';
 
 @Injectable()
 export class UserService {
@@ -26,7 +25,7 @@ export class UserService {
     throw new BadRequestException({ error, message });
   }
 
-  private async findOwner(userEmail: string): Promise<FindOwnerDTO | any> {
+  async findOwner(userEmail: string): Promise<FindOwnerDTO | any> {
     try {
       const owner = this.prisma.owner.findUnique({
         where: { email: userEmail },
