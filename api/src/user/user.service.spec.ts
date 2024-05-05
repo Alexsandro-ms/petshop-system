@@ -6,6 +6,8 @@ import { BadRequestException } from '@nestjs/common';
 import { UpdatePutUserDTO } from './dto/update-put-user.dto';
 import { UpdatePatchUserDTO } from './dto/update-patch-user.dto';
 import { DeleteUserDTO } from './dto/delete-user.dto';
+import { CreateUserDTO } from './dto/create-user.dto';
+import { FindUserDTO } from './dto/find-user.dto';
 
 describe('USER SERVICE', () => {
   let userService: UserService;
@@ -38,13 +40,10 @@ describe('USER SERVICE', () => {
 
   describe('#################### CREATE ####################', () => {
     it('Should create a user', async () => {
-      const body: IUser = {
-        id: '1',
+      const body: CreateUserDTO = {
         name: 'John Doe',
         email: 'johndoe@email.com',
         permission: 'boss',
-        emailVerified: new Date(1620144000000),
-        image: '',
       };
 
       prismaService.user.create = jest.fn().mockResolvedValue(body);
@@ -61,13 +60,10 @@ describe('USER SERVICE', () => {
     });
 
     it('should present an error when trying to create an user', async () => {
-      const body: IUser = {
-        id: '1',
+      const body: CreateUserDTO = {
         name: 'John Doe',
         email: null,
         permission: 'boss',
-        emailVerified: new Date(1620144000000),
-        image: '',
       };
 
       prismaService.user.create = jest
@@ -85,7 +81,7 @@ describe('USER SERVICE', () => {
 
   describe('################### FIND ALL ###################', () => {
     it('Should find all users', async () => {
-      const mockedUsers: IUser[] = [
+      const mockedUsers: FindUserDTO[] = [
         {
           id: '1',
           name: 'John Doe',
@@ -136,7 +132,7 @@ describe('USER SERVICE', () => {
 
   describe('################# FIND USER BY ID #################', () => {
     it('Should find an user by id', async () => {
-      const body: IUser = {
+      const body: FindUserDTO = {
         id: '1',
         name: 'John Doe',
         email: 'johndoe@email.com',
@@ -174,7 +170,7 @@ describe('USER SERVICE', () => {
 
   describe('################# FIND USER BY NAME #################', () => {
     it('Should find an user by name', async () => {
-      const body: IUser[] = [
+      const body: FindUserDTO[] = [
         {
           id: '1',
           name: 'John Doe',
@@ -207,7 +203,7 @@ describe('USER SERVICE', () => {
       expect(findUsersByName).toEqual(body);
     });
     it('Should give an error when trying to find users by name', async () => {
-      const body: IUser[] = [
+      const body: FindUserDTO[] = [
         {
           id: '1',
           name: 'John Doe',
