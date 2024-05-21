@@ -15,6 +15,11 @@ describe('USER SERVICE', () => {
   let userService: UserService;
   let prismaService: PrismaService;
 
+  beforeAll(async () => {
+    prismaService = new PrismaService();
+    prismaService.$connect();
+  });
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [UserService, PrismaService],
