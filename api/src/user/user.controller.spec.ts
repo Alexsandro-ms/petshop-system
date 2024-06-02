@@ -3,6 +3,7 @@ import { CreateUserDTO } from './dto/create-user.dto';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { FindUserDTO } from './dto/find-user.dto';
 
 describe('USER CONTROLLER', () => {
   let userController: UserController;
@@ -63,7 +64,35 @@ describe('USER CONTROLLER', () => {
       try {
         await userController.createUser(body);
       } catch (error) {
-        console.log(error.error);
+        expect(error).toEqual({ Error: 'Erro interno do servidor' });
+      }
+    });
+  });
+  describe('FIND ALL USERS', () => {
+    it('Should find and list all users', async () => {
+      const body: FindUserDTO = {
+        id: 'validId',
+        email: 'johndoe@email.com',
+        image: 'google.com',
+        name: 'John Doe',
+        password: '12345678910',
+        permission: 'boss',
+      };
+
+      userController.findAllUser = jest.fn().mockResolvedValue(body);
+      const findUsers = await userController.findAllUser();
+
+      expect(findUsers).toEqual(body);
+    });
+    it('Should occurr an error when trying find and list all users', async () => {
+      userController.findAllUser = jest
+        .fn()
+        .mockRejectedValue({ Error: 'Erro interno do servidor' });
+
+      try {
+        await userController.findAllUser();
+      } catch (error) {
+        expect(error).toEqual({ Error: 'Erro interno do servidor' });
       }
     });
   });
