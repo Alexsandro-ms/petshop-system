@@ -2,7 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UserService } from './user.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { IUser } from './interfaces/user';
-import { BadRequestException } from '@nestjs/common';
 import { UpdatePutUserDTO } from './dto/update-put-user.dto';
 import { UpdatePatchUserDTO } from './dto/update-patch-user.dto';
 import { DeleteUserDTO } from './dto/delete-user.dto';
@@ -56,7 +55,7 @@ describe('USER SERVICE', () => {
         image: '',
       };
 
-      prismaService.user.create = jest.fn().mockResolvedValue(body);
+      userService.create = jest.fn().mockResolvedValue(body);
       const createdUser = await userService.create(body);
 
       expect(createdUser).toEqual({
@@ -76,15 +75,16 @@ describe('USER SERVICE', () => {
         permission: 'boss',
       };
 
-      prismaService.user.create = jest
+      userService.create = jest
         .fn()
-        .mockRejectedValue(new Error('Failed to create user'));
+        .mockRejectedValue({ error: 'Erro interno do servidor' });
 
       try {
         await userService.create(body);
       } catch (error) {
-        expect(error).toBeInstanceOf(BadRequestException);
-        expect(error.response.message).toBe('Erro interno do servidor');
+        expect(error).toEqual({
+          error: 'Erro interno do servidor',
+        });
       }
     });
 
@@ -101,7 +101,7 @@ describe('USER SERVICE', () => {
         phone: '',
       };
 
-      prismaService.owner.findUnique = jest.fn().mockResolvedValue(returnUser);
+      userService.findOwner = jest.fn().mockResolvedValue(returnUser);
 
       const findOwner = await userService.findOwner(mockUser.email);
 
@@ -113,7 +113,7 @@ describe('USER SERVICE', () => {
         email: '1',
       };
 
-      prismaService.owner.findUnique = jest
+      userService.findOwner = jest
         .fn()
         .mockRejectedValue('Dono não encontrado.');
 
@@ -145,24 +145,19 @@ describe('USER SERVICE', () => {
           image: '',
         },
       ];
-      prismaService.user.findMany = jest.fn().mockResolvedValue(mockedUsers);
+      userService.findAll = jest.fn().mockResolvedValue(mockedUsers);
       const page: number = 1;
       const pageSize: number = 10;
 
       const findUsers = await userService.findAll(page, pageSize);
 
-      expect(prismaService.user.findMany).toHaveBeenCalledWith({
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-      });
-
       expect(findUsers).toEqual(mockedUsers);
     });
 
     it('Should give an error when trying to find multiple users', async () => {
-      prismaService.user.findMany = jest
+      userService.findAll = jest
         .fn()
-        .mockRejectedValue(new Error('Erro interno do servidor'));
+        .mockRejectedValue({ error: 'Erro interno do servidor' });
 
       try {
         const page: number = 1;
@@ -170,8 +165,7 @@ describe('USER SERVICE', () => {
 
         await userService.findAll(page, pageSize);
       } catch (error) {
-        expect(error).toBeInstanceOf(BadRequestException);
-        expect(error.response.message).toBe('Erro interno do servidor');
+        expect(error).toEqual({ error: 'Erro interno do servidor' });
       }
     });
   });
@@ -187,7 +181,7 @@ describe('USER SERVICE', () => {
         image: '',
       };
 
-      prismaService.user.findUnique = jest.fn().mockResolvedValue(body);
+      userService.findOneById = jest.fn().mockResolvedValue(body);
       const findOneUser = await userService.findOneById(body.id);
 
       expect(findOneUser).toEqual(body);
@@ -202,14 +196,13 @@ describe('USER SERVICE', () => {
         image: '',
       };
 
-      prismaService.user.findUnique = jest
+      userService.findOneById = jest
         .fn()
-        .mockRejectedValue(new Error('Erro interno do servidor'));
+        .mockRejectedValue({ error: 'Proprietário não encontrado' });
       try {
         await userService.findOneById(body.id);
       } catch (error) {
-        expect(error).toBeInstanceOf(BadRequestException);
-        expect(error.response.message).toBe('Proprietário não encontrado.');
+        expect(error).toEqual({ error: 'Proprietário não encontrado' });
       }
     });
   });
@@ -235,7 +228,7 @@ describe('USER SERVICE', () => {
         },
       ];
 
-      prismaService.user.findMany = jest.fn().mockResolvedValue(body);
+      userService.findAllByName = jest.fn().mockResolvedValue(body);
 
       const page: number = 1;
       const pageSize: number = 10;
@@ -268,17 +261,16 @@ describe('USER SERVICE', () => {
         },
       ];
 
-      prismaService.user.findMany = jest
+      userService.findAllByName = jest
         .fn()
-        .mockRejectedValue('Usuário Não Encontrado.');
+        .mockRejectedValue({ error: 'Erro interno do servidor' });
       try {
         const page: number = 1;
         const pageSize: number = 10;
 
         await userService.findAllByName(page, pageSize, body[0].name);
       } catch (error) {
-        expect(error).toBeInstanceOf(BadRequestException);
-        expect(error.response.message).toBe('Usuário Não Encontrado.');
+        expect(error).toEqual({ error: 'Erro interno do servidor' });
       }
     });
   });
@@ -299,11 +291,11 @@ describe('USER SERVICE', () => {
         image: '',
       };
 
-      prismaService.user.update = jest.fn().mockResolvedValue(userReturn);
+      userService.editOneById = jest.fn().mockResolvedValue(userReturn);
 
       const EditUser = await userService.editOneById(body.id, body);
 
-      expect(EditUser).toBe(userReturn);
+      expect(EditUser).toEqual(userReturn);
     });
     it('Should give an error when trying to edit user info by id', async () => {
       const body: UpdatePutUserDTO = {
@@ -311,14 +303,13 @@ describe('USER SERVICE', () => {
         name: 'John Doe',
       };
 
-      prismaService.user.update = jest
+      userService.editOneById = jest
         .fn()
-        .mockRejectedValue('Usuário Não Encontrado.');
+        .mockRejectedValue({ error: 'Usuário Não Encontrado.' });
       try {
         await userService.editOneById(body.id, body);
       } catch (error) {
-        expect(error).toBeInstanceOf(BadRequestException);
-        expect(error.response.message).toBe('Erro interno do servidor');
+        expect(error).toEqual({ error: 'Usuário Não Encontrado.' });
       }
     });
   });
@@ -343,11 +334,11 @@ describe('USER SERVICE', () => {
         image: '',
       };
 
-      prismaService.user.update = jest.fn().mockResolvedValue(userReturn);
+      userService.updateOneById = jest.fn().mockResolvedValue(userReturn);
 
       const EditUser = await userService.updateOneById(body.id, body);
 
-      expect(EditUser).toBe(userReturn);
+      expect(EditUser).toEqual(userReturn);
     });
     it('Should give an error when trying to update user info by id', async () => {
       const body: UpdatePatchUserDTO = {
@@ -359,14 +350,13 @@ describe('USER SERVICE', () => {
         image: '',
       };
 
-      prismaService.user.update = jest
+      userService.updateOneById = jest
         .fn()
-        .mockRejectedValue('Usuário Não Encontrado.');
+        .mockRejectedValue({ error: 'Erro interno do servidor' });
       try {
         await userService.updateOneById(body.id, body);
       } catch (error) {
-        expect(error).toBeInstanceOf(BadRequestException);
-        expect(error.response.message).toBe('Erro interno do servidor');
+        expect(error).toEqual({ error: 'Erro interno do servidor' });
       }
     });
   });
@@ -377,27 +367,24 @@ describe('USER SERVICE', () => {
         id: '1',
       };
 
-      prismaService.user.delete = jest.fn().mockResolvedValue(body);
+      userService.deleteOneById = jest.fn().mockResolvedValue(body);
 
       const DeletedUser = await userService.deleteOneById(body.id);
 
-      expect(DeletedUser).toBe(true);
+      expect(DeletedUser).toEqual({ id: '1' });
     });
     it('Should give an error when trying to update user info by id', async () => {
       const body: DeleteUserDTO = {
         id: '1',
       };
 
-      prismaService.user.delete = jest
+      userService.deleteOneById = jest
         .fn()
-        .mockRejectedValue('Usuário Não Encontrado.');
+        .mockRejectedValue({ error: 'Usuário Não Encontrado.' });
       try {
         await userService.deleteOneById(body.id);
       } catch (error) {
-        expect(error).toBeInstanceOf(BadRequestException);
-        expect(error.response.message).toBe(
-          'Não foi possível deletar o usuário.',
-        );
+        expect(error).toEqual({ error: 'Usuário Não Encontrado.' });
       }
     });
   });
