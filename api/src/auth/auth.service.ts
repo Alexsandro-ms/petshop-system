@@ -51,7 +51,10 @@ export class AuthService {
     return await bcrypt.compare(providedPassword, hashedPassword);
   }
 
-  async handleResetPassword(password: string, token: string) {
+  async handleResetPassword(
+    password: string,
+    token: string,
+  ): Promise<void | BadRequestException> {
     try {
       const data = this.jwtService.verify(token, {
         secret: process.env.SECRET_KEY,
@@ -74,7 +77,7 @@ export class AuthService {
         },
       );
     } catch (error) {
-      this.handleServerError(error, 'Erro interno do servidor');
+      return this.handleServerError(error, 'Erro interno do servidor');
     }
   }
 
@@ -119,14 +122,14 @@ export class AuthService {
     }
   }
 
-  async forget(email: string): Promise<boolean> {
+  async forget(email: string): Promise<boolean | BadRequestException> {
     try {
       const user = await this.prisma.user.findFirst({
         where: { email },
       });
 
       if (!user) {
-        this.handleServerError(undefined, 'Usuário não encontrado');
+        return this.handleServerError(undefined, 'Usuário não encontrado');
       }
 
       const forgetToken = this.jwtService.sign(
