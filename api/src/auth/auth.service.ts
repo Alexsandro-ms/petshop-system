@@ -81,7 +81,7 @@ export class AuthService {
     }
   }
 
-  private async handleCheckToken(token: string): Promise<object> {
+  async handleCheckToken(token: string): Promise<object> {
     try {
       return await this.jwtService.verify(token, {
         secret: process.env.SECRET_KEY,
