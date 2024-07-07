@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { AuthCredentialLoginDTO } from './dto/auth-credentials-login.dto';
 import { AuthCredentialRegisterDTO } from './dto/auth-credentials-register.dto';
-import { UserService } from 'src/user/user.service';
+import { UserService } from '../user/user.service';
 import { AuthService } from './auth.service';
 
 @Controller('auth')
