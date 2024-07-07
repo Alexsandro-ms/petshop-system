@@ -11,11 +11,6 @@ describe('AUTH SERVICE', () => {
   let authService: AuthService;
   let prismaService: PrismaService;
 
-  beforeAll(async () => {
-    prismaService = new PrismaService();
-    await prismaService.$connect();
-  });
-
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [
