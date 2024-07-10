@@ -6,6 +6,7 @@ import { UserService } from '../user/user.service';
 import { MailerService, MailerModule } from '@nestjs-modules/mailer';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { AuthCredentialRegisterDTO } from './dto/auth-credentials-register.dto';
+import { BadRequestException } from '@nestjs/common';
 
 describe('AUTH SERVICE', () => {
   let authService: AuthService;
@@ -99,5 +100,39 @@ describe('AUTH SERVICE', () => {
       expect(typeof userRegisted).toBe('string');
     });
   });
-  describe('#################### Forgot Password User ####################', () => {});
+  describe('#################### Check Token ####################', () => {
+    it('Should throw BadRequestException with correct message when token is invalid', async () => {
+      const token = 'invalid_token';
+      const error = new Error('Token error');
+      jest.spyOn(JwtService.prototype, 'verify').mockImplementation(() => {
+        throw error;
+      });
+
+      try {
+        await authService.handleCheckToken(token);
+      } catch (error) {
+        expect(error).toBeInstanceOf(BadRequestException);
+        expect(error.response).toEqual({
+          error,
+          message: 'Token Expirou, ou está incorreto',
+        });
+      }
+    });
+  });
+  describe('#################### Function That Throws A Bad Request Exception ####################', () => {
+    it('should throw BadRequestException with correct error and message', () => {
+      const error = new Error('Some server error');
+      const message = 'Custom error message';
+
+      try {
+        (authService as any).handleServerError(error, message);
+      } catch (error) {
+        expect(error).toBeInstanceOf(BadRequestException);
+        expect(error.response).toEqual({
+          error,
+          message,
+        });
+      }
+    });
+  });
 });
