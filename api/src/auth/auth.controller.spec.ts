@@ -169,7 +169,7 @@ describe('AUTH CONTROLLER', () => {
 
       const resetPassword = await authService.handleCheckToken(body.token);
       expect(resetPassword).toBe(body.token);
-      expect(typeof resetPassword).toBe('boolean');
+      expect(typeof resetPassword).toBe('string');
     });
     it('Should occurr an error when trying check if the token is valid or has expired', async () => {
       const body = { token: 'testInvalidToken' };
