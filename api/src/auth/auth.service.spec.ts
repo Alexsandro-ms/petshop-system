@@ -103,7 +103,7 @@ describe('AUTH SERVICE', () => {
   describe('#################### Check Token ####################', () => {
     it('Should throw BadRequestException with correct message when token is invalid', async () => {
       const token = 'invalid_token';
-      const error = new Error('Token error');
+      const error = new BadRequestException('Token Expirou, ou está incorreto');
       jest.spyOn(JwtService.prototype, 'verify').mockImplementation(() => {
         throw error;
       });
@@ -121,8 +121,8 @@ describe('AUTH SERVICE', () => {
   });
   describe('#################### Function That Throws A Bad Request Exception ####################', () => {
     it('should throw BadRequestException with correct error and message', () => {
-      const error = new Error('Some server error');
-      const message = 'Custom error message';
+      const error: any = new BadRequestException('Custom error message');
+      const message: string = 'Custom error message';
 
       try {
         (authService as any).handleServerError(error, message);
