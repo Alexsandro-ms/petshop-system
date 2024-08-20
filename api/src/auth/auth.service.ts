@@ -20,14 +20,14 @@ export class AuthService {
     private readonly mailer: MailerService,
   ) {}
 
-  private handleServerError(
+  handleServerError(
     error: any,
     message: string = 'Erro interno do servidor',
   ): BadRequestException {
     throw new BadRequestException({ error, message });
   }
 
-  private async handleCreateToken(user: IUser): Promise<string> {
+  async handleCreateToken(user: IUser): Promise<string> {
     try {
       const payload = {
         id: user.id,
@@ -44,7 +44,7 @@ export class AuthService {
     }
   }
 
-  private async handleComparePasswords(
+  async handleComparePasswords(
     providedPassword: string,
     hashedPassword: string,
   ): Promise<boolean> {
@@ -140,7 +140,7 @@ export class AuthService {
         },
       );
 
-      await this.mailer.sendMail({
+      return await this.mailer.sendMail({
         subject: 'Recuperar senha',
         to: user.email,
         html: `
@@ -167,8 +167,6 @@ export class AuthService {
             <p>Desenvolvedor FullStack</p>
         `,
       });
-
-      return true;
     } catch (error) {
       this.handleServerError(error);
     }
