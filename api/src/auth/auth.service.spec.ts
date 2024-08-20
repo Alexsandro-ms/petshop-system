@@ -6,7 +6,7 @@ import { UserService } from '../user/user.service';
 import { MailerService, MailerModule } from '@nestjs-modules/mailer';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { AuthCredentialRegisterDTO } from './dto/auth-credentials-register.dto';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 
 describe('AUTH SERVICE', () => {
   let authService: AuthService;
@@ -69,7 +69,13 @@ describe('AUTH SERVICE', () => {
         password: 'CorrectPassword',
       };
 
-      authService.handleLoginUser = jest
+      prismaService.user.findFirst = jest
+        .fn()
+        .mockResolvedValue({ email: body.email, password: 'hashedPassword' });
+
+      authService.handleComparePasswords = jest.fn().mockResolvedValue(true);
+
+      authService.handleCreateToken = jest
         .fn()
         .mockResolvedValue('validtokengenerated');
 
@@ -80,6 +86,46 @@ describe('AUTH SERVICE', () => {
 
       expect(userLogin).toBe('validtokengenerated');
       expect(typeof userLogin).toBe('string');
+    });
+    it('Should throw UnauthorizedException when email or password is incorrect', async () => {
+      const body: AuthCredentialLoginDTO = {
+        email: 'Johndoe@example.com',
+        password: 'WrongPassword',
+      };
+
+      prismaService.user.findFirst = jest
+        .fn()
+        .mockResolvedValue({ email: body.email, password: 'hashedPassword' });
+
+      authService.handleComparePasswords = jest.fn().mockResolvedValue(false);
+
+      await expect(
+        authService.handleLoginUser(body.email, body.password),
+      ).rejects.toThrow(UnauthorizedException);
+    });
+    it('Should handle server errors within catch block', async () => {
+      const body: AuthCredentialLoginDTO = {
+        email: 'Johndoe@example.com',
+        password: 'AnyPassword',
+      };
+
+      prismaService.user.findFirst = jest
+        .fn()
+        .mockRejectedValue(new Error('Database connection error'));
+
+      authService.handleServerError = jest
+        .fn()
+        .mockReturnValue(new BadRequestException('Internal Server Error'));
+
+      const response = await authService.handleLoginUser(
+        body.email,
+        body.password,
+      );
+
+      expect(response).toBeInstanceOf(BadRequestException);
+      expect(authService.handleServerError).toHaveBeenCalledWith(
+        expect.any(Error),
+      );
     });
   });
   describe('#################### Register User ####################', () => {
