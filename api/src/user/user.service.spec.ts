@@ -1,26 +1,23 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { UserService } from './user.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { UserService } from './user.service';
 import { IUser } from './interfaces/user';
 import { UpdatePutUserDTO } from './dto/update-put-user.dto';
 import { UpdatePatchUserDTO } from './dto/update-patch-user.dto';
 import { DeleteUserDTO } from './dto/delete-user.dto';
 import { CreateUserDTO } from './dto/create-user.dto';
 import { FindUserDTO } from './dto/find-user.dto';
-import { FindOwnerDTO } from 'src/owner/dto/find-owner.dto';
+import { FindOwnerDTO } from '../owner/dto/find-owner.dto';
 import { Owner } from '@prisma/client';
 
 describe('USER SERVICE', () => {
   let userService: UserService;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [UserService, PrismaService],
     }).compile();
-
     userService = module.get<UserService>(UserService);
-
-    userService.hashPassword = jest.fn().mockResolvedValue('hashedPassword');
   });
 
   afterEach(async () => {
@@ -44,6 +41,7 @@ describe('USER SERVICE', () => {
         image: '',
       };
 
+      userService.hashPassword = jest.fn().mockResolvedValue('hashedPassword');
       userService.create = jest.fn().mockResolvedValue(body);
       const createdUser = await userService.create(body);
 

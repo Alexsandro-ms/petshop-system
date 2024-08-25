@@ -2,19 +2,18 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { CreateUserDTO } from './dto/create-user.dto';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
-import { PrismaService } from '../prisma/prisma.service';
 import { FindUserDTO } from './dto/find-user.dto';
 import { UpdatePutUserDTO } from './dto/update-put-user.dto';
 import { UpdatePatchUserDTO } from './dto/update-patch-user.dto';
 import { DeleteUserDTO } from './dto/delete-user.dto';
+import { PrismaService } from '../prisma/prisma.service';
 
 describe('USER CONTROLLER', () => {
   let userController: UserController;
-  beforeEach(async () => {
+  beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [UserController, UserService, PrismaService],
     }).compile();
-
     userController = module.get<UserController>(UserController);
   });
 
