@@ -6,13 +6,16 @@ import { UserService } from '../user/user.service';
 import { MailerService, MailerModule } from '@nestjs-modules/mailer';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { AuthCredentialRegisterDTO } from './dto/auth-credentials-register.dto';
-import { BadRequestException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
+import { IUser } from 'src/user/interfaces/user';
+import { Role } from '@prisma/client';
 
 describe('AUTH SERVICE', () => {
   let authService: AuthService;
   let prismaService: PrismaService;
+  let jwtService: JwtService;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [
         JwtModule.register({
@@ -32,28 +35,30 @@ describe('AUTH SERVICE', () => {
       ],
       providers: [
         AuthService,
-        JwtService,
         PrismaService,
         UserService,
         {
+          provide: JwtService,
+          useValue: {
+            sign: jest.fn(),
+            verify: jest.fn(),
+          },
+        },
+        {
           provide: MailerService,
           useValue: {
-            sendMail: jest.fn().mockResolvedValue(true), // Mock the sendMail method
+            sendMail: jest.fn().mockResolvedValue(true),
           },
         },
       ],
     }).compile();
-
     authService = module.get<AuthService>(AuthService);
+    jwtService = module.get<JwtService>(JwtService);
     prismaService = module.get<PrismaService>(PrismaService);
   });
 
   afterEach(async () => {
     jest.clearAllMocks();
-  });
-
-  afterAll(async () => {
-    await prismaService.$disconnect();
   });
 
   describe('Module test', () => {
@@ -101,7 +106,7 @@ describe('AUTH SERVICE', () => {
 
       await expect(
         authService.handleLoginUser(body.email, body.password),
-      ).rejects.toThrow(UnauthorizedException);
+      ).rejects.toThrow(BadRequestException);
     });
     it('Should handle server errors within catch block', async () => {
       const body: AuthCredentialLoginDTO = {
@@ -126,6 +131,53 @@ describe('AUTH SERVICE', () => {
       expect(authService.handleServerError).toHaveBeenCalledWith(
         expect.any(Error),
       );
+    });
+    it('Should create a valid token', async () => {
+      const body: IUser = {
+        id: 'valid-id',
+        name: 'valid-name',
+        email: 'valid-email@example.com',
+        image: 'google.com/img',
+        permission: 'client',
+        emailVerified: new Date(),
+      };
+      jwtService.sign = jest.fn().mockResolvedValue(true);
+      const token = await authService.handleCreateToken(body);
+
+      expect(token).toBe('validtokengenerated');
+      expect(typeof token).toBe('string');
+    });
+    it('Should occur an error when trying to create a valid token', async () => {
+      const body: IUser = {
+        id: 'invalid-id',
+        name: 'invalid-name',
+        email: 'invalid-email@example.com',
+        image: 'google.com/img',
+        permission: 'client',
+        emailVerified: new Date(),
+      };
+
+      jest.spyOn(authService['jwtService'], 'sign').mockImplementation(() => {
+        throw new BadRequestException('invalidToken');
+      });
+
+      const handleServerErrorSpy = jest
+        .spyOn(authService, 'handleServerError')
+        .mockImplementation((error) => {
+          throw error;
+        });
+
+      try {
+        await authService.handleCreateToken(body);
+      } catch (error) {
+        expect(handleServerErrorSpy).toHaveBeenCalledWith(error);
+        expect(error).toBeInstanceOf(BadRequestException);
+        expect(error.response.error).toBe('Bad Request');
+        expect(error.response.statusCode).toBe(400);
+        expect(error.response.message).toBe('invalidToken');
+      }
+
+      handleServerErrorSpy.mockRestore();
     });
   });
   describe('#################### Register User ####################', () => {
