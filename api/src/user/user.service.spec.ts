@@ -12,12 +12,6 @@ import { Owner } from '@prisma/client';
 
 describe('USER SERVICE', () => {
   let userService: UserService;
-  let prismaService: PrismaService;
-
-  beforeAll(async () => {
-    prismaService = new PrismaService();
-    prismaService.$connect();
-  });
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -25,17 +19,12 @@ describe('USER SERVICE', () => {
     }).compile();
 
     userService = module.get<UserService>(UserService);
-    prismaService = module.get<PrismaService>(PrismaService);
 
     userService.hashPassword = jest.fn().mockResolvedValue('hashedPassword');
   });
 
   afterEach(async () => {
     jest.clearAllMocks();
-  });
-
-  afterAll(async () => {
-    await prismaService.$disconnect();
   });
 
   describe('MODULE TEST', () => {
